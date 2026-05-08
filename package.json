@@ -1,0 +1,28 @@
+{
+  "name": "agentlair-openai-agents-attestations-demo",
+  "version": "0.1.0",
+  "description": "Clone-and-run example: wrap an OpenAI Agents SDK agent with AgentLair behavioral attestation. Tools emit signed audit events, the agent issues a publicly verifiable Bonded Credibility Credential.",
+  "type": "module",
+  "module": "demo.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/piiiico/agentlair-openai-agents-attestations-demo"
+  },
+  "scripts": {
+    "demo": "bun run demo.ts",
+    "verify": "bun run verify.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@agentlair/openai-agents": "^0.2.0",
+    "@openai/agents": "^0.7.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
