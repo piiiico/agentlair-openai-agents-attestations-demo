@@ -2,7 +2,26 @@
 
 ![BCC](https://agentlair.dev/v1/bcc/bcc_8gkhJjgw0JM7mMIsqUW1/badge.svg)
 
-An OpenAI Agents SDK agent runs. AgentLair signs every tool call. The agent issues a Bonded Credibility Credential at the end. Anyone can verify the run, no account needed.
+Agent runs leave no trace. This demo wraps an OpenAI Agents SDK agent with AgentLair so every tool call is hash-chained into a Bonded Credibility Credential — cryptographically verifiable by anyone, no account needed:
+
+```bash
+curl https://agentlair.dev/v1/bcc/bcc_8gkhJjgw0JM7mMIsqUW1/verify
+```
+
+## The footgun
+
+`tool({execute})` installs `defaultToolErrorFunction`, which swallows thrown errors and returns a model-readable string. To make errors propagate so the wrapper records `tool.error`, set `errorFunction: null` on the tool (see `test/wrapper.test.ts` `FAILING_TOOL`):
+
+```typescript
+const failingTool = tool({
+  description: '...',
+  parameters: z.object({ input: z.string() }),
+  execute: async () => { throw new Error('downstream failure'); },
+  errorFunction: null,  // without this, errors become silent model-readable strings
+});
+```
+
+Without `errorFunction: null`, your audit chain shows success where the tool actually failed.
 
 ## Quickstart
 
@@ -119,6 +138,26 @@ The BCC issued by `recorder.issueBcc()` is a W3C Verifiable Credential, profile 
 ```
 
 The first and last event ids anchor the BCC into the audit chain. A dispute reviewer can pull both events from `GET /v1/audit/log` and walk the hash chain between them.
+
+## Verify the chain
+
+```bash
+curl https://agentlair.dev/v1/bcc/bcc_8gkhJjgw0JM7mMIsqUW1/verify
+```
+
+Expected shape:
+
+```json
+{
+  "credential_id": "bcc_8gkhJjgw0JM7mMIsqUW1",
+  "valid": true,
+  "profile": "BCC-Claims",
+  "issuer": "did:web:agentlair.dev:agents:acc_o5wvN67psmfMdFv0",
+  "evidence_chain": [{ "type": "self_anchor", "ref": "self:bcc_8gkhJjgw0JM7mMIsqUW1" }]
+}
+```
+
+The audit chain behind this BCC has 6 events. Walk them at `GET /v1/audit/log`.
 
 ## Verify standalone
 
